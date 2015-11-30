@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Session;
 import org.apache.catalina.session.StandardManager;
+import org.apache.catalina.session.StandardSession;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
@@ -22,7 +23,6 @@ import org.apache.juli.logging.LogFactory;
 public class InfinispanSessionManager extends StandardManager {
 
 	private final Log log = LogFactory.getLog(InfinispanSessionManager.class);
-
 	/**
 	 * In case of disable autostart webapp can start cache storage just in time.
 	 * To do that webapp must provide it's context path to get appropriate session manager
@@ -65,7 +65,12 @@ public class InfinispanSessionManager extends StandardManager {
 		return "InfinispanSessionManager/1.0";
 	}
 
-	@Override
+    protected StandardSession getNewSession() {
+        return new InfinispanManagedSession(this);
+    }
+
+
+    @Override
 	public String getName() {
 		return "TISM";
 	}
@@ -190,5 +195,12 @@ public class InfinispanSessionManager extends StandardManager {
 
 	public void setContainerProviderMethod(String containerProviderMethod) {
 		this.containerProviderMethod = containerProviderMethod;
+	}
+
+	public void updateSession(InfinispanManagedSession session) {
+		if(session.getId()==null)
+			return;
+		
+		sessions.put(session.getId(), session);
 	}
 }

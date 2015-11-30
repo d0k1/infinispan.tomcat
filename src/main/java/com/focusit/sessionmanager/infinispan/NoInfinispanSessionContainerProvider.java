@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Example session storage provider
+ * Example session container provider
  * @author Denis V. Kirpichenkov
  *
  */
