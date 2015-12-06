@@ -1,4 +1,4 @@
-package com.focusit.sessionmanager.infinispan;
+package com.focusit.sessionmanager.infinispan.tomcat;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Session;
 import org.apache.catalina.session.StandardManager;
@@ -20,16 +21,16 @@ import org.apache.juli.logging.LogFactory;
  * @author Denis V. Kirpichenkov
  *
  */
-public class InfinispanSessionManager extends StandardManager {
+public class TomcatInfinispanSessionManager extends StandardManager {
 
-	private final Log log = LogFactory.getLog(InfinispanSessionManager.class);
+	private final Log log = LogFactory.getLog(TomcatInfinispanSessionManager.class);
 	/**
 	 * In case of disable autostart webapp can start cache storage just in time.
 	 * To do that webapp must provide it's context path to get appropriate session manager
 	 */
-	private static final ConcurrentHashMap<String, InfinispanSessionManager> managers = new ConcurrentHashMap<>();
+	private static final ConcurrentHashMap<String, TomcatInfinispanSessionManager> managers = new ConcurrentHashMap<>();
 
-	public InfinispanSessionManager() {
+	public TomcatInfinispanSessionManager() {
 		super();
 	}
 
@@ -66,7 +67,7 @@ public class InfinispanSessionManager extends StandardManager {
 	}
 
     protected StandardSession getNewSession() {
-        return new InfinispanManagedSession(this);
+        return new TomcatInfinispanManagedSession(this);
     }
 
 
@@ -74,6 +75,10 @@ public class InfinispanSessionManager extends StandardManager {
 	public String getName() {
 		return "TISM";
 	}
+    
+    public void setGenericContainer(Object container){
+    	this.setContainer((Container) container);
+    }
 
 	@Override
 	protected void doLoad() throws ClassNotFoundException, IOException {
@@ -104,7 +109,7 @@ public class InfinispanSessionManager extends StandardManager {
 		start();
 	}
 
-	public static InfinispanSessionManager getManagerByContainer(String name) {
+	public static TomcatInfinispanSessionManager getManagerByContainer(String name) {
 		return managers.get(name);
 	}
 
@@ -131,9 +136,9 @@ public class InfinispanSessionManager extends StandardManager {
 	public void startCache() {
 		if (getContainerProviderClass() != null && getContainerProviderMethod() != null) {
 			try {
-				Class<?> cls = Thread.currentThread().getContextClassLoader().loadClass(containerProviderClass);
-				Method method = cls.getMethod(containerProviderMethod, null);
-				sessions = (Map) method.invoke(null, null);
+				Class<?> cls = Class.forName(containerProviderClass);
+				Method method = cls.getMethod(containerProviderMethod);
+				sessions = (Map) method.invoke(null);
 			} catch (ClassNotFoundException e) {
 				log.error(e.toString(), e);
 			} catch (IllegalAccessException e) {
@@ -197,7 +202,7 @@ public class InfinispanSessionManager extends StandardManager {
 		this.containerProviderMethod = containerProviderMethod;
 	}
 
-	public void updateSession(InfinispanManagedSession session) {
+	public void updateSession(TomcatInfinispanManagedSession session) {
 		if(session.getId()==null)
 			return;
 		

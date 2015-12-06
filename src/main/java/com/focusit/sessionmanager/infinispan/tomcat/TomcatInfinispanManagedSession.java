@@ -1,4 +1,4 @@
-package com.focusit.sessionmanager.infinispan;
+package com.focusit.sessionmanager.infinispan.tomcat;
 
 import java.beans.PropertyChangeSupport;
 import java.security.Principal;
@@ -23,11 +23,11 @@ import org.apache.catalina.session.StandardSession;
  * @author Denis V. Kirpichenkov
  *
  */
-public class InfinispanManagedSession extends StandardSession {
+public class TomcatInfinispanManagedSession extends StandardSession {
 
-	private static final String sessionName = "InfinispanManagedSesson/1.0";
+	private static final String sessionName = "TomcatInfinispanManagedSession/1.0";
 
-	public InfinispanManagedSession(Manager manager) {
+	public TomcatInfinispanManagedSession(Manager manager) {
 		super(manager);
 		container = manager.getContainer().getName();
 	}
@@ -55,13 +55,13 @@ public class InfinispanManagedSession extends StandardSession {
 		}
 		
 		if(manager==null){
-			manager = InfinispanSessionManager.getManagerByContainer(container);
+			manager = TomcatInfinispanSessionManager.getManagerByContainer(container);
 		}
 	}
 
     private void updateSessionInInfinispan(){
-    	if(manager instanceof InfinispanSessionManager){
-    		InfinispanSessionManager ism = (InfinispanSessionManager) manager;
+    	if(manager instanceof TomcatInfinispanSessionManager){
+    		TomcatInfinispanSessionManager ism = (TomcatInfinispanSessionManager) manager;
     		ism.updateSession(this);
     	}
     }
@@ -185,4 +185,18 @@ public class InfinispanManagedSession extends StandardSession {
 		super.setAttribute(name, value, notify);
 		updateSessionInInfinispan();
 	}
+
+    /**
+     * Return a string representation of this object.
+     */
+    @Override
+    public String toString() {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("TomcatInfinispanManagedSession[");
+        sb.append(id);
+        sb.append("]");
+        return (sb.toString());
+
+    }
 }
